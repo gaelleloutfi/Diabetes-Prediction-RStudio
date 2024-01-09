@@ -1,0 +1,1552 @@
+---
+title: 'Final Project'
+author: "by Jana Jaber, Hadi Bazzi, and Gaelle Loutfi"
+date: "(December 9, 2023)"
+output:
+  html_document:
+    theme: readable
+    highlight: zenburn
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+# Problem Selection
+
+### Introduction to the topic:
+Diabetes (mellitus) is a widespread chronic, long-lasting, health condition with a growing global prevalence. This disease affects how your body uses blood sugar (glucose) to turn food into energy. With diabetes, the body does not produce enough insulin or cannot use it properly. This causes too much blood sugar to accumulate in the bloodstream, which over time, can cause serious health problems including heart disease, loss of vision, and kidney disease.  There are various types of diabetes, that differ in certain aspects, yet they share a multitude of common symptoms, causes, and effects. An estimated number of 537 million adults were said to have diabetes in 2021, and according to the WHO, both the number of cases and the prevalence of diabetes have been steadily increasing over the past few decades. 
+There is a huge amount of risk factors that play a role in causing diabetes. However, it is important to note that the exact cause of most types of diabetes is unknown, but can be attributed to a combination of genetic or environmental factors in most cases. 
+
+
+In the following, we will be developing different models that can identify, individuals at risk of developing diabetes based on a dataset of various features: Gender, Age, Hypertension, Heart Disease, Smoking History, BMI, HbA1c (glycated hemoglobin) Level, and Blood Glucose Level.
+
+### Information about the features:
+Based on scientific literature, the following is known about each of the features in relation to the disease: 
+
+* *Gender*: The overall global prevalence of diabetes is higher in men, even though there are more women with type 2 diabetes than men. Hence, knowing that the dataset does not include the type of diabetes each individual has, we cannot yet infer the magnitude of the effect this feature will have in terms of predictive power.  
+
+*	*Age*: While type 1 usually develops in childhood or early adulthood, people 45 years or older have a higher risk of developing type 2 diabetes. So we might expect this feature to not have a significant predictive power, in terms of overall diabetes prediction. 
+
+*	*Hypertension*: According to Johns Hopkins Medicine, if you have diabetes, you are twice as likely to have high blood pressure. Hence, we can expect this feature to impact our prediction accuracy. 
+
+*	*Heart Disease*: People with diabetes are 2 to 4 times more likely to develop cardiovascular disease (Johns Hopkins Medicine). Likewise, this feature is expected to impact the results. 
+
+*	*Smoking History*: People who smoke are 30% to 40% more likely to develop type 2 diabetes (CDC), as nicotine changes cells so they don’t respond to insulin, which increases blood sugar levels. In this particular case, the frequency of smoking, which is not included in the dataset, can impact the likeliness of developing diabetes. So the importance of this feature in our model is yet to be clearly understood. 
+
+*	*BMI*: An increase in BMI is related to increase in the risk of diabetes. Being Overweight (BMI of 25-29.9), or affected by obesity (BMI of 30-39.9) or morbid obesity (BMI of 40 or greater) greatly increases the risk of developing diabetes. Accordingly, we might expect this feature to be discriminative as the exact BMI is provided. 
+
+*	*HbA1c Level*: Average blood sugar levels over the past 3 months. A value below 5.7% can be used to classify a person as non-diabetic, while a value of 6.5% or higher can be used to diagnose a person as having diabetes. This is normally very important to take into consideration when trying to determine if a person has diabetes. 
+
+*	*Blood Glucose Level*: As previously mentioned, diabetes causes blood glucose levels to rise higher than normal (hyperglycemia). A fasting blood sugar level of 99mg/dL is normal, while 126 mg/dL or higher indicates you are likely to have diabetes (CDC).As hyperglycemia is one of the main direct consequences of diabetes, we can expect this feature to help in accurately predicting the disease. 
+
+
+### Importance:
+It is important to identify diabetes as early as possible as it can help prevent or delay the development of the complications and effects previously mentioned. Moreover, early detecting can lead to lower healthcare costs by preventing costly implication. Hence, early detection can help reduce the overall burden that this increasingly frequent disease has been imposing on healthcare systems.
+
+
+# Dataset Selection
+
+The dataset consists of data related to diabetes, with the following characteristics:
+
+Number of Rows: 100,000
+
+Number of Columns: 9
+
+The dataset includes the following columns, which represent the various features:
+
+Gender: Categorical data indicating the gender of the individual (Male, Female).
+
+Age: Numeric data indicating the age of the individual.
+
+Hypertension: Binary data (0 or 1) indicating the presence or absence of hypertension.
+
+Heart Disease: Binary data (0 or 1) indicating the presence or absence of heart disease.
+
+Smoking History: Categorical data indicating the smoking history (ever, never, current smoker, not current smoker, former, or no information).
+
+BMI (Body Mass Index): Numeric data indicating the BMI of the individual.
+
+HbA1c Level: Numeric data indicating the HbA1c level, a measure of blood sugar control over the past 2 to 3 months.
+
+Blood Glucose Level: Numeric data indicating the blood glucose level of the individual.
+
+Diabetes: Binary data (0 or 1) indicating the presence or absence of diabetes.
+
+
+Our team has selected a subset of the dataset "diabetes_subset.csv" which consists of 1,000 records extracted from the original "diabetes.csv" dataset. The original dataset contained 8 features alongside a target label, spanning a total of 100,000 observations. In creating this subset, we maintained the same proportion of class labels as found in the full dataset. Additionally, we deliberately excluded any observations where the values "ever" and "not current" were present since:
+
+ever: Usually means the individual has smoked at some point in their life, but it's not clear from the context whether they currently smoke or not.
+
+not current: Could imply that the person used to smoke but does not currently, although it's somewhat ambiguous and could overlap with 'former'.
+
+
+# Data exploration
+
+After having selected an appropriate dataset for our topic of interest, we now need to understand its characteristics and get insight from them. In order to do that,we will start by identifying any missing values and duplicates, as well as getting an overview of its size through the number of rows and variables present. After establishing this fundamental understanding, we'll delve into visualizing our data using various techniques including various graph types, such as histograms, bar charts, and heatmap. This approach will enable us to effectively display different aspects of our dataset, facilitating a deeper understanding through comparative and pattern analysis. This initial step is crucial in setting the stage for more advanced data analysis and insights extraction.
+
+Note: Please be aware that the heatmap will be applied following the conversion of categorical data into numeric values during the data preprocessing stage, as heatmaps work exclusively with numeric data.
+
+
+```{r message=FALSE}
+library(readr)
+# Read the dataset
+data <- read_csv("diabetes_subset.csv")
+```
+
+
+* What is the `dimension` of our dataset?
+```{r}
+dim(data)
+```
+
+* What are the `variables` in our dataset?
+```{r}
+names(data)
+```
+
+* Importing Libraries
+```{r message =FALSE, warning=FALSE}
+# Load necessary libraries
+library(tidyverse)
+library(ggplot2)
+library(gt)
+library(caret)
+library(MASS) # for LDA and QDA
+library(pROC) # for ROC curves
+library(broom)
+library(dplyr)
+library(readr)
+library(caret)
+library(knitr)
+library(reshape2)
+library(corrplot)
+library(tidyr)
+library(pROC)
+library(boot)
+library(class)
+library(ggthemes) # for additional themes
+library(ggrepel) 
+library(gridExtra)
+library(pheatmap)
+library(randomForest)
+library(kernlab)
+```
+
+* Missing Values 
+
+```{r}
+missing_values_per_column <- sapply(data, function(x) sum(is.na(x)))
+
+print(missing_values_per_column)
+
+```
+
+* Duplicate observations
+```{r}
+duplicate_rows <- duplicated(data)
+number_of_duplicates <- sum(duplicate_rows)
+print(number_of_duplicates)
+
+```
+
+* How our dataset `looks like`?
+
+```{r}
+data %>%
+  slice(1:5) %>%
+  gt() 
+```
+
+## Exploring the Data Graphically
+
+In our data analysis, we'll use histograms to visualize numerical data, effectively revealing distribution patterns like skewness and outliers through frequency bins. For categorical data, bar graphs will be our choice, offering a clear comparison of category frequencies, which is invaluable for identifying prevalent groups and observing trends across different categories. These visualization techniques are essential for gaining a deeper understanding of both numerical and categorical aspects of our dataset.
+
+### Histograms for numerical data
+* Histograms for the following numerical variables: Age, BMI, HbA1c Level, and Blood Glucose Level.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+# Read the dataset
+diabetes_data <- read_csv("diabetes_subset.csv")
+
+# Descriptive statistics
+diabetes_data %>% summary()
+
+# Visualizations
+# Histograms for continuous variables
+p_age <- ggplot(diabetes_data, aes(x = age)) +
+         geom_histogram(bins = 30, fill = "lightblue", alpha = 0.7) +
+         theme_minimal() +
+         ggtitle("Age Distribution")
+
+p_bmi <- ggplot(diabetes_data, aes(x = bmi)) +
+         geom_histogram(bins = 30, fill = "pink", alpha = 0.7) +
+         theme_minimal() +
+         ggtitle("BMI Distribution")
+
+p_hba1c <- ggplot(diabetes_data, aes(x = HbA1c_level)) +
+           geom_histogram(bins = 30, fill = "lightblue", alpha = 0.7) +
+           theme_minimal() +
+           ggtitle("HbA1c Level Distribution")
+
+p_glucose <- ggplot(diabetes_data, aes(x = blood_glucose_level)) +
+             geom_histogram(bins = 30, fill = "pink", alpha = 0.7) +
+             theme_minimal() +
+             ggtitle("Blood Glucose Level Distribution")
+
+grid.arrange(p_age, p_bmi, nrow = 1)
+grid.arrange(p_hba1c, p_glucose, nrow = 1)
+
+
+
+```
+
+- **Age Distribution:** Exhibits a bimodal pattern with peaks around young adults and middle-aged individuals, indicating a concentration of data in these age groups.
+
+- **BMI Distribution:** Shows a right-skewed distribution with a concentration in the 'overweight' category, suggesting a prevalence of higher BMI values in the dataset.
+
+- **HbA1c Level Distribution:** Displays a roughly normal but slightly right-skewed distribution, with most values falling within the normal to well-controlled diabetic range.
+
+- **Blood Glucose Level Distribution:** Is right-skewed with notable spikes around the normal fasting level and the diabetic threshold, indicating distinct groupings possibly related to diabetes classification.
+
+### Bar Graphs for Categorical data
+* Bar Graphs for the following categorical variables: Hypertension and  Heart Disease.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Bar plots for categorical variables
+p_hypertension <- ggplot(diabetes_data, aes(x = factor(hypertension))) +
+                  geom_bar(fill = "lightblue") +
+                  theme_minimal() +
+                  ggtitle("Hypertension Distribution")
+
+p_heart_disease <- ggplot(diabetes_data, aes(x = factor(heart_disease))) +
+                   geom_bar(fill = "pink") +
+                   theme_minimal() +
+                   ggtitle("Heart Disease Distribution")
+grid.arrange(p_hypertension, p_heart_disease, nrow = 1)
+```
+
+- **Hypertension Distribution:** A majority of individuals do not have hypertension (indicated by 0), with a small proportion of the dataset having hypertension (indicated by 1).
+
+- **Heart Disease Distribution:** Similarly, most individuals in the dataset do not have heart disease, while a minority does.
+
+Note that even though we have mentioned that diabetes is likely to cause the previous two conditions, it does not mean that every person with diabetes will develop them, nor does it mean that every individual exhibiting these conditions will necessarily be diabetic. 
+
+These distributions suggest that the dataset primarily consists of individuals without these conditions, which could be relevant when analyzing the overall health profile or risk factors associated with the study's main condition of interest, diabetes.
+
+
+### Class distribution
+* In order to be able to choose the appropriate performance metric for evaluating the model's performance, we need to examine the class label distribution. This will help us determine the balance between the two classes.
+
+```{r}
+
+ggplot(diabetes_data, aes(x = (diabetes), fill = factor(diabetes))) +
+  geom_bar() +
+  scale_fill_manual(values=c("0" = "lightblue", "1" = "pink")) +
+  labs(title = "Class Distribution of Diabetes Output",
+       x = "Diabetes (0 = No, 1 = Yes)",
+       y = "Count") +
+  theme_minimal()
+
+```
+
+
+- Significant imbalance is observed in the dataset.
+- Majority class (No Diabetes): Significantly larger number of instances.
+- Minority class (Diabetes): Comparatively smaller number of instances.
+
+**Implications for Model Performance Metrics:**
+These results help us make the following inferences:
+
+- **Accuracy**: It is not a reliable metric due to the imbalance in the dataset.
+  - A model could predict 'No Diabetes' for all cases and still be 'accurate'.
+  
+- **Alternative Metrics**: More appropriate for imbalanced datasets.
+  - **F1 Score**: The harmonic mean of Precision and Recall, useful when seeking a balance between Precision and Recall.
+
+These alternative metrics should be considered for a more suitable assessment of a model's performance, especially in imbalanced datasets like the one observed for diabetes classification.
+
+# Data preprocessing
+Before we proceed onto building our models, we need to clean and preprocess the dataset in order to make it more suitable for the machine learning algorithm.
+Data preprocessing serves as the crucial foundation upon which our models are built. This section is dedicated to the essential task of cleaning and transforming the dataset to render it suitable and optimized for machine learning algorithms. Through careful handling of the data, we aim to enhance its quality, consistency, and compatibility, ultimately facilitating the creation of robust and accurate predictive models. 
+
+```{r message=FALSE, echo=FALSE}
+data <- data[data$smoking_history != "No Info", ]
+```
+
+- Removing observations with `smoking_history` = "`No Info`" from the dataset is primarily motivated by the need to ensure data quality and relevance, particularly in studies where smoking status is a crucial factor. This step helps maintain the integrity of statistical analyses by focusing on complete and consistent information, which is essential for accurate modeling and analysis. It avoids the potential biases and reduced model performance that can arise from including data points with missing or undefined key information.
+
+
+```{r message=FALSE, echo=FALSE}
+
+one_hot_encoding <- model.matrix(~ smoking_history - 1, data = data)
+
+columns_before_diabetes <- names(data)[1:which(names(data) == "diabetes") - 1]
+df_encoded <- data.frame(data[, columns_before_diabetes], 
+                         one_hot_encoding, 
+                         data[, (which(names(data) == "diabetes")):ncol(data)])
+df_encoded$smoking_history <- NULL
+
+df_encoded$gender[df_encoded$gender == "Male"] <- "1"
+df_encoded$gender[df_encoded$gender == "Female"] <- "0"
+df_encoded$gender <- strtoi(df_encoded$gender, 0L)
+
+df_encoded %>%
+  slice(1:5) %>%
+  gt()
+
+```
+
+- Converting `gender` from categorical ('`Male`', '`Female`') to binary numeric values (1 for Male, 0 for Female) is done to facilitate the use of these variables in statistical and machine learning models (p.s. decision tree can handle categorical data). Many such models require numerical input and cannot process categorical data in its original form. By encoding 'gender' as 0 and 1, it simplifies the dataset and makes it compatible with a wider range of algorithms that expect numerical input.
+
+- One-hot encoding "smoking history" is crucial for converting categorical data into a numerical format suitable for machine learning algorithms. It avoids implying false ordinal relationships between categories and can enhance model performance. This process introduces higher dimensionality, but it's a worthwhile trade-off for more accurate and effective data representation in many analytical models.
+
+### Heat Map
+* After converting our categorical data to numeric data, we will examine the heat map.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Calculate the correlation matrix from the numeric encoded data frame
+data_cor <- cor(df_encoded)
+
+# Melt the correlation matrix into a long format
+data_long <- melt(data_cor)
+
+# Create the heatmap with ggplot
+ggplot(data_long, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = sprintf("%.2f", value)), vjust = 1, color = "black", size = 3) + 
+  scale_fill_gradient2(low = "#6D9EC1", high = "#E46726", mid = "white",
+                       midpoint = 0, limits = c(-1, 1), space = "Lab",
+                       name="Pearson\nCorrelation") +
+  theme_minimal() +
+  coord_fixed() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 8),
+        axis.text.y = element_text(size = 8),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+```
+
+- `Diabetes` has a *positive* correlation with `smoking_historyformer`, suggesting that individuals with a history of smoking may have a *higher* likelihood of diabetes, which is consistent with the information gotten from the literature. 
+
+- There is a moderate *positive* correlation between `diabetes` and `heart_disease`, indicating a *possible* association where individuals with heart disease may have an *increased* possibility of being diabetic.
+
+- The correlation between `diabetes` and `blood_glucose_level` is *positive* and *strong*, which aligns with medical knowledge since, as previously mentioned, elevated blood glucose levels are a hallmark of diabetes.
+
+- Likewise, a similar *positive* correlation is noted between `diabetes` and `HbA1c_level`, another clinical marker used to diagnose and monitor diabetes.
+
+- The correlations of diabetes with `bmi`, `hypertension`, and `age` are present but relatively *weaker*, suggesting these factors may have a *less direct* or more complex relationship with diabetes. This makes sense for age, as the correlation between age and diabetes is dependent on the type of diabetes like we previously said. Moreover, hypertension is a possible repercussion of diabetes, not a cause that can be used individually for prediction, so this makes sense as well, even though it does not align with our previous expectations. Similarly, we expected BMI to have better prediction power than it actually does. 
+
+- `Diabetes` *does not* show a *strong correlation* with `gender` or different categories of `smoking_history` other than `former`, indicating these factors may not be as significant in predicting diabetes in this dataset. For gender, it probably goes back to the limitation of not having the diabetes type being provided, which as we previously mentioned, is where diabetes starts having varying prevalence between genders.
+
+
+## Splitting the data
+
+Now, we need to split the dataset into training and test sets. In order to do that, we will begin by establishing a random seed to ensure reproducibility. Subsequently, we will employ a method to perform the actual data split.
+
+Our chosen configuration involves dividing the dataset into an 80% Training Set and a 20% Test Set.
+
+Selecting this 80-20 split for a dataset consisting of 950 observations is a judicious decision. It provides us with 760 observations for robust training, which is crucial when dealing with complex datasets. Simultaneously, it reserves 190 observations for testing, enabling us to effectively evaluate the model's performance. This partitioning strategy effectively circumvents the shortcomings of both a 50-50 split (which lacks sufficient training data) and a 70-30 split (which results in an excessively large test set). This balanced approach strikes a harmonious balance between reducing bias in training and assessing model variance during testing.
+
+To accomplish this split, we will utilize the createDataPartition function from the caret package. This choice is preferred over the sample function because while sample() provides a basic means of random sampling for data splitting, createDataPartition() offers a more specialized and balanced approach. This specialization proves particularly advantageous when dealing with classification problems, as it helps maintain appropriate class proportions in the split dataset.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+data$diabetes <- factor(data$diabetes, levels = c(0, 1))
+
+
+target <- data$diabetes
+features <-  data[, !(names(data) %in% 'diabetes')]
+set.seed(42)
+
+indexes <- createDataPartition(target, p=0.8, list=FALSE)
+train_x <- features[indexes,]
+test_x <- features[-indexes,]
+train_y <- target[indexes]
+test_y <- target[-indexes]
+
+```
+
+# Feature Selection
+
+We plan to employ the Random Forest algorithm for selecting the most important features from our original dataset, which notably includes categorical features. The choice of Random Forest is strategic, as it's renowned for its robustness and efficiency in handling various types of data, including categorical variables. This method operates by constructing numerous decision trees during the training process and outputting the mode of the classes (classification) or mean prediction (regression) of the individual trees. This ensemble approach not only enhances the predictive accuracy but also helps in avoiding overfitting, a common pitfall in complex models. Additionally, Random Forest has an inherent feature importance measurement, providing valuable insights into which features contribute most significantly to the predictive model. This makes it an ideal tool for our feature selection process, ensuring that we focus on the most relevant variables, thereby improving the efficiency and effectiveness of our subsequent modeling efforts.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Load necessary libraries
+library(randomForest)
+library(caret)
+
+# Assuming train_x and train_y are already defined in your environment
+
+# Initialize a 3D array to store feature importances
+# Dimensions: Features x Folds x Number of Trees
+num_trees_seq <- seq(50, 500, by = 50)
+feature_importances <- array(dim = c(ncol(train_x), 5, length(num_trees_seq)))
+
+# Perform 5-fold cross-validation
+set.seed(42)  # For reproducibility
+folds <- createFolds(train_y, k = 5, list = TRUE, returnTrain = TRUE)
+
+for (trees in num_trees_seq) {
+  for (i in 1:5) {
+    # Create indices for the training and validation set within the training data
+    fold_train_indices <- folds[[i]]
+    fold_validation_indices <- setdiff(1:nrow(train_x), fold_train_indices)
+
+    # Subset the training data for cross-validation
+    cv_train_x <- train_x[fold_train_indices, ]
+    cv_train_y <- train_y[fold_train_indices]
+
+    # Train the Random Forest model
+    rf_model <- randomForest(x = cv_train_x, y = cv_train_y, ntree = trees, mtry = sqrt(ncol(train_x)), importance = TRUE)
+    
+    # Store the feature importances for the current number of trees and fold
+    feature_importances[, i, which(num_trees_seq == trees)] <- importance(rf_model)[, 'MeanDecreaseAccuracy']
+  }
+}
+
+# Calculate the average importance of each feature across all folds and number of trees
+average_importances <- apply(feature_importances, c(1, 3), mean)
+
+# Create a data frame for the features, their importances, and the number of trees
+feature_importance_list <- lapply(seq_along(num_trees_seq), function(t) {
+  data.frame(
+    Feature = colnames(train_x),
+    Importance = average_importances[, t],
+    NumberOfTrees = num_trees_seq[t]
+  )
+})
+
+# Combine the data frames for all numbers of trees into one data frame
+combined_feature_importance_df <- do.call(rbind, feature_importance_list)
+
+# Sorting the features by their average importance within each number of trees
+sorted_features_list <- lapply(unique(combined_feature_importance_df$NumberOfTrees), function(trees) {
+  subset_df <- subset(combined_feature_importance_df, NumberOfTrees == trees)
+  subset_df[order(-subset_df$Importance), ]
+})
+
+# Output the sorted features and their importances for each number of trees
+#lapply(sorted_features_list, print)
+
+
+# Calculate the final average importance of each feature across all numbers of trees
+final_average_importances <- apply(average_importances, 1, mean)
+
+# Create a data frame for the features and their final average importances
+final_feature_importance_df <- data.frame(Feature = colnames(train_x), Importance = final_average_importances)
+
+# Sorting the features by their final average importance
+sorted_final_features <- final_feature_importance_df[order(-final_feature_importance_df$Importance), ]
+
+# Output the sorted features and their final average importances
+print(sorted_final_features)
+
+
+
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Load the ggplot2 library
+library(ggplot2)
+
+# Create a vector of alternating colors
+color_vector <- rep(c("lightblue", "pink"), length.out = nrow(sorted_final_features))
+
+# Creating the plot with color customization
+ggplot(sorted_final_features, aes(x = reorder(Feature, Importance), y = Importance, fill = Feature)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = color_vector) +  # Custom color scale
+  coord_flip() +  # Flips the axes to make it easier to read feature names
+  theme_minimal() +
+  labs(title = "Feature Importances in Random Forest Model",
+       x = "Feature",
+       y = "Average Importance") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Adjusts the text angle for better readability
+        legend.position = "none")  # Hides the legend as it's not necessary
+
+
+```
+
+* We used the 'data' dataset consisting of the 950 observations and the original 9 variables to fit the random forest model, and test the importance of our features.
+
+* We systematically varied the number of trees, spanning the range from 50 to 500, incrementing by 50 with each iteration. For each setting, we meticulously conducted a 5-fold cross-validation procedure, ensuring the robustness and generalizability of our results. During this process, we calculated the average feature importance across the 5 folds for each specific number of trees. This iterative approach allowed us to comprehensively assess how the importance of each feature evolved in response to the changing complexity of the model.
+
+* To consolidate our findings and gain a holistic understanding of feature importance, we took the extra step of averaging the importance scores across the diverse set of tree configurations we experimented with. This methodical analysis not only helped us identify the significance of individual features but also provided us with valuable insights into how the Random Forest model responded to different levels of tree diversity, ultimately enabling us to make informed decisions about feature selection and model refinement.
+
+* **In our evaluation** we employed the `'MeanDecreaseAccuracy'` metric to assess how model accuracy changes when we permute a feature's values. This method provides us with a valuable estimate of each feature's importance, with higher scores indicating a more substantial decrease in accuracy when that feature's values are shuffled. This drop in accuracy signifies the significance of the feature to the model.
+
+
+**HbA1c_level:** This feature has the highest importance score of approximately 36.48, highlighting its critical role in predicting diabetes within the dataset. It's likely the most significant indicator among all the features considered. This makes sense as it is used to clinically classify a person as diabetic or non-diabetic based on certain thresholds. 
+
+**blood_glucose_level:** Coming in with a score of approximately 28.40, this feature is also highly influential in the model, which aligns with medical knowledge that blood glucose levels are a primary diagnostic criterion for diabetes.
+
+**age:** Age has an importance score of about 3.19, suggesting it has a moderate influence on the model's predictions. This does not align with the previously made assumptions, which again highlights the importance of this process to gain insight that might not have been obvious.  
+
+**bmi:** With a score around 2.37, the body mass index is another moderate predictor. Higher BMI is often associated with increased risk of diabetes.
+
+**smoking_history:** This has a lower importance score of approximately 1.27, indicating a smaller but still significant influence on diabetes risk prediction.
+
+**hypertension:** The score for hypertension is about 0.70, which suggests it has a minor influence on the prediction model.
+
+**gender:** Gender shows a small positive importance score of approximately 0.11, indicating that while gender may play a role in the model, its impact is limited. This aligns with the previously addressed issue of not having the diabetes type, which is more correlated with gender than just diabetes in general.
+
+**heart_disease:** Interestingly, heart disease has a negative importance score of about -0.37. This does not necessarily mean that heart disease negatively impacts the model's accuracy. Instead, it may indicate that heart disease is less predictive of diabetes compared to other features, at least within the context of this Random Forest model.
+
+
+**Consequently**, our analysis revealed that the gender, heart disease, and hypertension features consistently ranked as the least important in our models. In other words, these contribute the least to solving the problem. As a result, we are inclined to remove these features to conduct further testing and gauge the predictive power of our models without their influence.
+
+
+# Model development
+
+## Random Forest
+
+To start, we'll initially run the random forest model with all the features included. We'll assess its accuracy and F1-score. Afterward, we'll rerun the model, this time excluding the gender and hypertension variables. This comparative analysis aims to confirm that these variables indeed lack significant predictive power, as indicated in the feature selection section.
+
+* Random Forest with all features included
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Train a Random Forest model
+# ntree is the number of trees to grow - you can adjust this number as needed
+# mtry is the number of variables randomly sampled as candidates at each split
+set.seed(42)
+
+random_forest_model <- randomForest(x = train_x, y = train_y, ntree = 100, mtry = sqrt(ncol(train_x)))
+
+# Predict on the test data
+rf_predictions <- predict(random_forest_model, test_x)
+
+# Compute the confusion matrix
+rf_conf_matrix <- confusionMatrix(rf_predictions, test_y)
+
+# Extract F1 score and accuracy from the confusion matrix
+rf_f1_score <- rf_conf_matrix$byClass['F1']
+rf_accuracy <- rf_conf_matrix$overall['Accuracy']
+
+# Print the results
+print(paste("F1 Score:", rf_f1_score))
+print(paste("Accuracy:", rf_accuracy))
+
+```
+
+* Random Forest excluding `gender`, `heart disease`, and `hypertension` features
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+#data$diabetes <- factor(data$diabetes, levels = c(0, 1))
+
+target2 <- data$diabetes
+
+features2 <- data[, !(names(data) %in% c('diabetes', 'gender', 'hypertension', 'heart_disease'))]
+
+set.seed(42)
+
+indexes2 <- createDataPartition(target2, p=0.8, list=FALSE)
+
+train_x2 <- features2[indexes2,]
+test_x2 <- features2[-indexes2,]
+train_y2 <- target2[indexes2]
+test_y2 <- target2[-indexes2]
+train_data2 <- data[indexes2, ]
+test_data2 <- data[-indexes2, ]
+
+
+random_forest_model <- randomForest(x = train_x2, y = train_y2, ntree = 100, mtry = sqrt(ncol(train_x2)))
+
+# Predict on the test data
+rf_predictions <- predict(random_forest_model, test_x2)
+
+
+# Compute the confusion matrix
+rf_conf_matrix <- confusionMatrix(rf_predictions, test_y2)
+
+# Extract F1 score and accuracy from the confusion matrix
+rf_f1_score <- rf_conf_matrix$byClass['F1']
+rf_accuracy <- rf_conf_matrix$overall['Accuracy']
+
+
+# Print the results
+print(paste("F1 Score:", rf_f1_score))
+print(paste("Accuracy:", rf_accuracy))
+
+
+#Added
+
+probabilities <- predict(random_forest_model, test_x2, type = "prob")[, "1"]
+roc_data <- roc(test_y2, probabilities)
+
+# Convert to a DataFrame for ggplot
+roc_df <- data.frame(
+  FPR = roc_data$specificities,
+  TPR = roc_data$sensitivities
+)
+
+# Plot ROC curve using ggplot2
+ggplot(roc_df, aes(x = 1 - FPR, y = TPR)) +
+  geom_line(color = "lightblue") + # Set line color to blue
+  geom_abline(linetype = "dashed", color = "pink") + # Set dashed line color to pink
+  labs(title = "ROC Curve for Random Forest", x = "False Positive Rate", y = "True Positive Rate") +
+  theme_minimal()
+
+
+```
+
+As demonstrated above, both the accuracy and F1 score remained unchanged after the removal of these three features. This observation strongly suggests that these three features hold little to no significance in predicting the diabetes label. 
+
+However, it's essential to note that the removal of any other feature, particularly the most critical ones like **HbA1c_level** and **blood_glucose_level**, resulted in a significant decrease in these evaluation metrics. This highlights the pivotal role played by these two features in our model's predictive power.
+
+## Bagging
+We will train our model on a refined dataset, one that excludes the features that we've identified as less significant for our Bagging model. Bagging operates by creating multiple subsets of the dataset, each with its own variations, and trains individual models on these subsets. These models, often decision trees, work in parallel to provide predictions. In the end, Bagging combines the predictions from these models to generate a more robust and accurate overall prediction. This technique is particularly effective in reducing overfitting and improving generalization, making it a valuable tool in our model-building arsenal.
+
+```{r message = FALSE, warning=FALSE, echo=FALSE}
+
+library(randomForest)
+library(caret)
+library(PRROC)
+library(ggplot2)
+library(dplyr)
+
+# Train the Random Forest model
+set.seed(42) # for reproducibility
+
+# Train the Random Forest model
+rf_model <- randomForest(train_x2, train_y2, ntree=100)
+
+# Predict on the test data
+predictions <- predict(rf_model, test_x2)
+
+
+# Compute the F1 score
+f1_confusionMatrix <- confusionMatrix(predictions, test_y2, positive="1")
+f1_score <- f1_confusionMatrix$byClass['F1']
+
+# Compute the accuracy
+accuracy_confusionMatrix <- confusionMatrix(predictions, test_y2)
+accuracy <- sum(diag(accuracy_confusionMatrix$table)) / sum(accuracy_confusionMatrix$table)
+
+print(paste("Accuracy:", accuracy))
+print(paste("F1 Score:", f1_score))
+
+
+# Added 
+
+library(tidyverse)
+library(pROC)
+
+# Assuming you have already calculated probabilities and test_y2 is available
+probabilities <- predict(rf_model, test_x2, type = "prob")[, "1"]
+roc_data <- roc(test_y2, probabilities)
+
+
+# Convert to a DataFrame for ggplot
+roc_df <- data.frame(
+  FPR = roc_data$specificities,
+  TPR = roc_data$sensitivities
+)
+
+# Plot ROC curve using ggplot2
+ggplot(roc_df, aes(x = 1 - FPR, y = TPR)) +
+  geom_line(color = "lightblue") + # Set line color to blue
+  geom_abline(linetype = "dashed", color = "pink") + # Set dashed line color to pink
+  labs(title = "ROC Curve for Bagging", x = "False Positive Rate", y = "True Positive Rate") +
+  theme_minimal()
+
+
+```
+
+## Pruned vs Unpruned trees
+
+* Building an unpruned decision tree:
+A decision tree model is trained on the training data using the rpart function. This model includes all possible splits and is not pruned, meaning it might be overly complex and potentially overfit to the training data.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Load necessary libraries
+library(rpart)
+library(caret)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Define the control using a 10-fold cross-validation
+train_control <- trainControl(method = "cv", number = 10, savePredictions = TRUE)
+
+# Train the model using the 'train' function with the 'rpart' method
+unpruned_tree_cv <- train(train_y2 ~ ., data = data.frame(train_x2, train_y2), 
+                          method = "rpart",
+                          trControl = train_control,
+                          tuneGrid = expand.grid(cp = -1), # Setting cp to -1 to grow an unpruned tree
+                          control = rpart.control(minsplit = 1, xval = 0))
+
+# Print the summary of the tree
+#print(unpruned_tree_cv)
+
+# Predict on the test data using the best model obtained from cross-validation
+predictions <- predict(unpruned_tree_cv, test_x2)
+
+# Compute the confusion matrix
+confusionMatrix <- confusionMatrix(predictions, test_y2)
+
+# Compute the F1 score
+f1_score <- confusionMatrix$byClass['F1']
+
+# Compute the accuracy
+accuracy <- confusionMatrix$overall['Accuracy']
+
+# Print the results
+print(paste("Cross-Validated Accuracy:", accuracy))
+print(paste("Cross-Validated F1 Score:", f1_score))
+
+
+```
+
+* Building a pruned decision tree:
+Pruning is the process of reducing the complexity of the decision tree to avoid overfitting. This is done by identifying the complexity parameter (cp) that minimizes cross-validated error and using it to prune the tree. We used a sequence of cp values (complexity parameter values) for the train function to explore to find the best pruned tree. 
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Load necessary libraries
+library(rpart)
+library(caret)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Define the control using a 10-fold cross-validation
+train_control <- trainControl(method = "cv", number = 10, savePredictions = TRUE)
+
+# Define the grid for 'cp' values. You can adjust the sequence as needed.
+cp_values <- seq(0.0001, 0.001, by = 0.0001)
+
+# Train the model using the 'train' function with the 'rpart' method
+pruned_tree_cv <- train(train_y2 ~ ., data = data.frame(train_x2, train_y2), 
+                        method = "rpart",
+                        trControl = train_control,
+                        tuneGrid = expand.grid(cp = cp_values), # Grid of 'cp' values for pruning
+                        control = rpart.control(minsplit = 1, xval = 0))
+
+# Print the summary of the tree
+print(pruned_tree_cv)
+
+# Predict on the test data using the best model obtained from cross-validation
+predictions <- predict(pruned_tree_cv, test_x2)
+
+#print(predictions)
+
+# Compute the confusion matrix
+confusionMatrix <- confusionMatrix(predictions, test_y2)
+
+# Compute the F1 score
+f1_score <- confusionMatrix$byClass['F1']
+
+# Compute the accuracy
+accuracy <- confusionMatrix$overall['Accuracy']
+
+# Print the results
+print(paste("Cross-Validated Accuracy:", accuracy))
+print(paste("Cross-Validated F1 Score:", f1_score))
+
+
+#Added
+
+prob_predictions <- predict(pruned_tree_cv, test_x2, type = "prob")[, "1"]
+
+print(prob_predictions)
+
+# Calculate the ROC data
+roc_data <- roc(test_y2, prob_predictions)
+
+# Create a data frame for ggplot2
+roc_df <- data.frame(
+  FPR = roc_data$specificities,
+  TPR = roc_data$sensitivities
+)
+
+# Plot ROC curve using ggplot2
+roc_plot <- ggplot(roc_df, aes(x = 1 - FPR, y = TPR)) +
+  geom_line(color = "lightblue", size = 1) + # ROC curve line
+  geom_abline(linetype = "dashed", color = "pink", size = 1) + # Diagonal reference line
+  labs(title = "ROC Curve for Pruned Decision Tree",
+       x = "False Positive Rate",
+       y = "True Positive Rate") +
+  theme_minimal()
+
+# Print the ROC plot
+print(roc_plot)
+
+
+
+```
+* Pruned Vs Unpruned:
+
+F1 Score:
+Pruned Tree: The F1 score for the pruned tree is 98.30%, which is extremely high.
+Unpruned Tree: The unpruned tree has an F1 score of 96.23%. While this is also a strong score, it is slightly lower than the pruned tree.
+
+**Pruning** a decision tree (by adjusting the complexity parameter cp) helps in reducing the size of the tree, making it simpler and more generalizable. A pruned tree typically has fewer nodes and depth, reducing the risk of overfitting to the training data.
+
+**An unpruned tree**, on the other hand, can grow very large and complex. It can perfectly fit the training data, capturing all its nuances and noise, which often leads to overfitting. This means it might not perform as well on new, unseen data.
+
+### Comparison between Different Trees
+
+**Random Forest**: This curve is closest to the top-left corner, which suggests that the Random Forest model has the highest True Positive Rate (TPR) for most thresholds and the lowest False Positive Rate (FPR). It demonstrates the best discriminatory ability among the three models.
+
+**Bagging**: The Bagging model's ROC curve is also quite close to the top-left corner but not as close as the Random Forest model's curve. This indicates that while the Bagging model is performing well, it is not as effective at classifying the positive class as the Random Forest model.
+
+**Pruned Decision Tree**: The curve for the Pruned Decision Tree is the furthest from the top-left corner compared to the other two. This suggests that it has the lowest TPR and the highest FPR among the three models, which indicates that it has the worst performance in terms of ROC.
+
+When comparing models using ROC curves, the Area Under the Curve (AUC) can also provide a single measure of performance regardless of the classification threshold. The model with the highest AUC is generally considered the best. The curve that is highest and most to the left is the best model.
+
+* **Note**:
+
+In our analysis, we observed that the F1 score for the Random Forest model was exceptionally high at 98.30%. Comparatively, the Bagging model scored 76.92%, and the Pruned Decision Tree model also performed well with a score of 96.23%. It is relatively uncommon for a Decision Tree, even a pruned one, to achieve an F1 score close to that of a Random Forest. This unusual result prompted a thorough investigation into the possible causes.
+
+We undertook various preprocessing techniques on our dataset to understand this anomaly. These techniques included working with the original dataset containing categorical data, encoding the categorical data and using the dataset comprising solely numeric data, and trying to fit the dataset after standardizing and normalizing the data. Despite these varied approaches, the outcomes remained consistently similar across different model runs. This consistency suggests that there might be underlying factors at play, potentially related to the nature of the dataset or the inherent characteristics of the models used.
+
+Moreover, a deeper insight was gained when we analyzed the ROC (Receiver Operating Characteristic) curves of these models. The ROC curves clearly delineated the performance differences among the models, aligning more with our initial expectations. The ROC analysis provided a more nuanced view of the models' performance, highlighting aspects that the F1 score alone might have obscured. This discrepancy between the F1 scores and the ROC curve analysis underscores the importance of utilizing multiple evaluation metrics to gain a comprehensive understanding of model performance.
+
+
+## SVM
+After exploring Decision Trees and Random Forests, we now advance to Support Vector Machines (SVM) for their superior handling of complex classification boundaries. SVM stands out with its use of kernel functions, allowing it to efficiently process linear and non-linear data.
+
+- **Transitioning to SVM**
+Decision Trees and Random Forests, while effective, can fall short in complex scenarios. SVM, with its ability to maximize the margin between classes, offers a more robust solution, especially when dealing with non-linear boundaries.
+
+- **Exploring SVM Kernels**
+We will experiment with three SVM kernels:
+
+    - *Linear Kernel:* Tuning the 'C' parameter for linearly separable data.
+    - *Radial Basis Function (RBF) Kernel:* Adjusting 'gamma' for non-linear data.
+    - *Polynomial Kernel:* Varying 'degree' to handle complex interactions.
+**Preprocessing and Hyperparameter Tuning**
+We will use the encoded data, as SVM requires numerical inputs. We'll then conduct hyperparameter tuning for each kernel, focusing on 'C' for linear, 'gamma' for RBF, and 'degree' for polynomial kernels, to find the optimal settings.
+
+**Comparative Analysis**
+Finally, we'll compare the performance of each kernel to determine the most effective approach for our dataset, leveraging the strengths of SVM in contrast to Decision Trees and Random Forests.
+
+### Linear Kernel
+Lets start with linear kernel:Linear Kernel is used when the data is Linearly separable.
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+df_encoded$diabetes <- factor(df_encoded$diabetes, levels = c(0, 1))
+
+target <- df_encoded$diabetes
+features <- df_encoded[, !(names(df_encoded) %in% c('diabetes', 'gender','hypertension','heart_disease'))]
+set.seed(42)
+indexes <- createDataPartition(target, p=0.8, list=FALSE)
+train_x_encoded <- features[indexes,]
+test_x_encoded  <- features[-indexes,]
+train_y_encoded  <- target[indexes]
+test_y_encoded  <- target[-indexes]
+
+
+
+library(e1071)
+# Train the SVM model with a linear kernel
+svm_model <- svm(train_x_encoded, train_y_encoded, kernel = "linear", cost =0.01)
+
+# Predict on the test data
+svm_predictions <- predict(svm_model, test_x_encoded)
+
+# Compute the confusion matrix
+conf_matrix <- confusionMatrix(svm_predictions, test_y_encoded)
+
+# Extract F1 score and accuracy from the confusion matrix
+f1_score <- conf_matrix$byClass["F1"]
+accuracy <- conf_matrix$overall["Accuracy"]
+
+# Print the results
+print(paste("F1 Score:", f1_score))
+print(paste("Accuracy:", accuracy))
+
+```
+#### Hyperparameter tuning
+Above we used the most common value of C which is `0.01` now we will explore more values of C and how it will affect the performance.
+Steps:
+1. **Defining the Hyperparameter Range**: A range of values for the hyperparameter 'C' (the regularization parameter in SVM) is defined. This range spans from \(10^{-3}\) to \(10^{2}\), increasing in steps of \(0.5\) on a logarithmic scale.
+
+2. **Setting Up Cross-Validation**: The `trainControl` function is used to set up a 10-fold cross-validation process. The `twoClassSummary` function is specified as the `summaryFunction` to compute performance metrics suitable for binary classification, including the ROC metric.
+
+3. **Training the SVM Model**: The `train` function from the `caret` package is used to train the SVM model. This function internally performs grid search across the defined range of 'C' values. The model's performance is evaluated using the Area Under the ROC Curve (AUC) metric (`metric = "ROC"`).
+
+4. **Selecting the Best Model**: After training, the model with the best performance (highest ROC value) is selected. The corresponding 'C' value is identified as the best hyperparameter setting.
+
+```{r}
+library(caret)
+library(e1071)
+df_encoded$diabetes <- factor(df_encoded$diabetes, levels = unique(df_encoded$diabetes), labels = c("0", "1"))
+
+train_y_encoded <- factor(train_y_encoded, levels = c("0", "1"), labels = c("Class0", "Class1"))
+test_y_encoded <- factor(test_y_encoded, levels = c("0", "1"), labels = c("Class0", "Class1"))
+
+
+# Define a range of C values to try
+c_values <- 10^seq(-3, 2, by = 0.5)
+
+# Set up train control for cross-validation with F1 score as the metric
+train_control <- trainControl(method = "cv", number = 10, 
+                              summaryFunction = twoClassSummary, 
+                              classProbs = TRUE, 
+                              savePredictions = "final")
+
+# Train the SVM model using caret's train function with F1 score as the metric
+set.seed(123)
+tuned_svm <- train(x = train_x_encoded, y = train_y_encoded, method = "svmLinear",
+                   trControl = train_control, 
+                   tuneGrid = expand.grid(C = c_values),
+                   metric = "ROC")
+
+# Print the best C value based on F1 score
+best_c_value <- tuned_svm$bestTune$C
+print(paste("Best C Value:", best_c_value))
+
+# Predict on the test data using the best model
+svm_predictions <- predict(tuned_svm, test_x_encoded)
+
+# Compute the confusion matrix
+conf_matrix <- confusionMatrix(svm_predictions, test_y_encoded)
+
+# Extract F1 score and accuracy from the confusion matrix
+f1_score <- conf_matrix$byClass["F1"]
+accuracy <- conf_matrix$overall["Accuracy"]
+
+# Print the results
+print(paste("F1 Score:", f1_score))
+print(paste("Accuracy:", accuracy))
+
+```
+
+The output of our SVM model training and evaluation indicates a high level of performance in classifying the given label. There was an improvement in performance after changing the cost value. The optimal hyperparameter C, chosen for regularization in the SVM model, is 0.1, suggesting a balance between model complexity and generalization. The F1 score, a balanced measure of precision and recall, is impressively high at approximately 0.975, indicating excellent model accuracy and reliability in both identifying and classifying positive cases.
+
+### ROC Curve for SVM with Linear Kernel
+```{r echo=FALSE, message=FALSE}
+set.seed(123)
+# Get probability predictions for the positive class (assuming "Class1" is the positive class)
+prob_predictions_svm <- predict(tuned_svm, test_x_encoded, type = "prob")[, "Class1"]
+
+# Calculate the ROC data
+roc_data_svm <- roc(test_y_encoded, prob_predictions_svm)
+
+# Calculate the AUC
+auc_svm <- auc(roc_data_svm)
+
+# Print the AUC
+print(paste("AUC for SVM with Linear Kernel:", auc_svm))
+
+# Create a data frame for ggplot2
+roc_df_svm <- data.frame(
+  FPR = roc_data_svm$specificities,
+  TPR = roc_data_svm$sensitivities
+)
+
+# Plot ROC curve using ggplot2
+roc_plot_svm <- ggplot(roc_df_svm, aes(x = 1 - FPR, y = TPR)) +
+  geom_line(color = "lightblue", size = 1) + # ROC curve line
+  geom_abline(linetype = "dashed", color = "pink", size = 1) + # Diagonal reference line
+  labs(title = "ROC Curve for SVM Model with linear kernel",
+       x = "False Positive Rate",
+       y = "True Positive Rate") +
+  theme_minimal()
+
+# Print the ROC plot
+print(roc_plot_svm)
+```
+
+## Radial Kernel
+
+We will now transition to using the Radial Basis Function (RBF) kernel, a powerful kernel type in SVM modeling. The Radial kernel, also known as the Gaussian kernel, transforms the feature space into a higher dimension where linear separation of the classes is more feasible, making it highly effective for non-linear datasets.
+
+```{r}
+set.seed(123)
+# Train the SVM model with a linear kernel
+svm_model <- svm(train_x_encoded, train_y_encoded, kernel = "radial", gamma= 0.001)
+
+# Predict on the test data
+svm_predictions <- predict(svm_model, test_x_encoded)
+
+# Compute the confusion matrix
+conf_matrix <- confusionMatrix(svm_predictions, test_y_encoded)
+
+# Extract F1 score and accuracy from the confusion matrix
+f1_score <- conf_matrix$byClass["F1"]
+accuracy <- conf_matrix$overall["Accuracy"]
+
+# Print the results
+print(paste("F1 Score:", f1_score))
+print(paste("Accuracy:", accuracy))
+```
+### Hyperparameter tuning 
+Above we used the most common value of gamma which is `0.001` now we will explore more values of gamma and how it will affect the performance.
+Steps:
+1. **Defining the Hyperparameter Range**: A range of gamma values for the SVM with a Radial Basis Function (RBF) kernel is defined, spanning from `10^(-3)` to `10^(3)`. These values are chosen to explore a wide spectrum on a logarithmic scale, incrementing in steps of `0.5`.
+
+2. **Setting Up Cross-Validation**: Cross-validation is established using the `tune.control` function, specifying a 10-fold cross-validation strategy (`cross = 10`). This approach ensures a robust assessment of the model's performance across different subsets of the data.
+
+3. **Performing the Grid Search**: The `tune` function from the `e1071` package in R is employed to conduct a grid search over the defined range of gamma values. This function systematically tests each gamma value, evaluating its effect on the model's performance.
+
+4. **Identifying the Optimal Hyperparameter**: Post the grid search, the best performing model is identified based on the cross-validation results. The optimal gamma value is extracted (`best_gamma`) and is considered the most effective for the SVM model with the RBF kernel.
+
+5. **Training and Evaluating the Final Model**: The SVM model is then retrained using the optimal gamma value. The model's effectiveness is assessed on the test set, with key performance metrics like F1 score and accuracy derived from the confusion matrix, providing insights into the model's classification capability.
+
+```{r}
+set.seed(123)
+# Define a range of gamma values to test
+gamma_range <- 10^seq(-3, 3, by = 0.5)
+
+# Set up the tune control to perform cross-validation
+tune_control <- tune.control(sampling = "cross", cross = 10)
+
+# Perform the cross-validation using the tune() function
+svm_tune_result <- tune(
+  svm, 
+  train.x = train_x_encoded, 
+  train.y = train_y_encoded,
+  kernel = "radial",
+  ranges = list(gamma = gamma_range),
+  tunecontrol = tune_control
+)
+
+# Print the best model found
+
+#print(svm_tune_result$best.model)
+
+# Extract the best gamma value
+best_gamma <- svm_tune_result$best.parameters$gamma
+
+# Print the best gamma value
+print(paste("Best gamma value:", best_gamma))
+
+# Train the SVM model using the best gamma value
+best_svm_model <- svm(train_x_encoded, train_y_encoded, kernel = "radial", gamma = best_gamma)
+
+# Predict on the test data using the best model
+best_svm_predictions <- predict(best_svm_model, test_x_encoded)
+
+# Compute the confusion matrix for the best model
+best_conf_matrix <- confusionMatrix(best_svm_predictions, test_y_encoded)
+
+# Extract F1 score and accuracy from the confusion matrix
+best_f1_score <- best_conf_matrix$byClass["F1"]
+best_accuracy <- best_conf_matrix$overall["Accuracy"]
+
+# Print the results for the best model
+print(paste("Best F1 Score:", best_f1_score))
+print(paste("Best Accuracy:", best_accuracy))
+
+```
+
+The results from tuning the SVM model with the Radial Basis Function (RBF) kernel demonstrate a highly effective model for our dataset. The optimal gamma value found is approximately 0.0316, suggesting that this specific setting for the kernel width achieves a good balance between capturing the complexity of the data and avoiding overfitting. The F1 score, a critical metric that balances precision and recall, is remarkably high at around 0.972. This indicates that the model is exceptionally proficient at correctly classifying instances while maintaining a balance between precision and recall. Additionally, the overall accuracy of the model stands at approximately 94.7%, reinforcing its robustness in making correct predictions across both classes. 
+
+### Roc Curve for SVM with Radial Kernel
+
+```{r message=FALSE, echo=FALSE}
+library(e1071)
+library(pROC)
+library(ggplot2)
+set.seed(123)
+
+# Train the SVM model using the best gamma value with probability estimates
+best_svm_model <- svm(train_x_encoded, train_y_encoded, kernel = "radial", gamma = best_gamma, probability = TRUE)
+
+# Predict on the test data using the best model with probability estimates
+svm_prob <- predict(best_svm_model, test_x_encoded, probability = TRUE)
+
+# Extract the probabilities for the positive class
+svm_probabilities <- attr(svm_prob, "probabilities")[, "Class1"]
+
+# Calculate the ROC data
+roc_data_svm <- roc(response = test_y_encoded, predictor = svm_probabilities)
+
+# Calculate the AUC
+auc_svm <- auc(roc_data_svm)
+
+# Print the AUC
+print(paste("AUC for SVM with Radial Kernel:", auc_svm))
+
+# Create a data frame for ggplot2
+roc_df_svm <- data.frame(
+  FPR = roc_data_svm$specificities,
+  TPR = roc_data_svm$sensitivities
+)
+
+# Plot ROC curve using ggplot2
+roc_plot_svm <- ggplot(roc_df_svm, aes(x = 1 - FPR, y = TPR)) +
+  geom_line(color = "lightblue", size = 1) +
+  geom_abline(linetype = "dashed", color = "pink", size = 1) +
+  labs(title = "ROC Curve for SVM Model with Radial Kernel",
+       x = "False Positive Rate",
+       y = "True Positive Rate") +
+  theme_minimal()
+
+# Print the ROC plot
+print(roc_plot_svm)
+
+```
+
+
+## Polynomial Kernel 
+We are now transitioning to explore the use of the polynomial (poly) kernel in our Support Vector Machine (SVM) modeling. The polynomial kernel, often simply referred to as the "poly kernel," is a type of kernel function that represents the similarity of vectors (samples) in a feature space over polynomials of the original variables, allowing the model to capture more complex relationships. Unlike linear or radial kernels, the polynomial kernel considers not only the given features but also their interactions up to a certain degree, defined by the kernel's degree parameter.
+
+```{r}
+set.seed(123)
+svm_model <- svm(train_x_encoded, train_y_encoded, kernel = "poly", degree = 2)
+
+# Predict on the test data
+svm_predictions <- predict(svm_model, test_x_encoded)
+
+# Compute the confusion matrix
+conf_matrix <- confusionMatrix(svm_predictions, test_y_encoded)
+
+# Extract F1 score and accuracy from the confusion matrix
+f1_score <- conf_matrix$byClass["F1"]
+accuracy <- conf_matrix$overall["Accuracy"]
+
+# Print the results
+print(paste("F1 Score:", f1_score))
+print(paste("Accuracy:", accuracy))
+```
+
+### Hyperparameter tuning
+Above we used the most common degree which is `2` now we will explore more values of degree and how it will affect the performance.
+Steps:
+1. **Defining the Hyperparameter Range**: For the SVM with a polynomial (poly) kernel, a range of degree values is defined, typically ranging from 2 to 6. This range is selected to explore the impact of different polynomial degrees on the model's ability to capture complex, non-linear relationships in the data.
+
+2. **Setting Up Cross-Validation**: Cross-validation is configured using the `tune.control` function, specifying a 10-fold cross-validation method (`cross = 10`). This strategy is essential to ensure a comprehensive evaluation of the model's performance across different segments of the dataset.
+
+3. **Performing the Grid Search**: The `tune` function from the `e1071` package in R is utilized to execute a grid search across the specified range of degree values. This grid search systematically assesses each degree value to understand its influence on the model's effectiveness.
+
+4. **Identifying the Optimal Hyperparameter**: After completing the grid search, the model yielding the best performance during cross-validation is identified. The optimal polynomial degree (`best_degree`) is determined from this process, indicating the most effective degree for the SVM model with the poly kernel.
+
+5. **Training and Evaluating the Final Model**: With the optimal degree value, the SVM model is retrained. The performance of this final model is then assessed on the test data, extracting critical metrics such as the F1 score and accuracy from the confusion matrix. These metrics offer valuable insights into the model's classification accuracy and its overall predictive power.
+
+
+```{r}
+set.seed(123)
+# Define a range of degree values to test
+degree_range <- 2:6  # Adjust this range based on what you deem appropriate
+
+# Set up the tune control to perform cross-validation
+tune_control <- tune.control(sampling = "cross", cross = 10)
+
+# Perform the cross-validation using the tune() function
+svm_tune_result <- tune(
+  svm, 
+  train.x = train_x_encoded, 
+  train.y = train_y_encoded,
+  kernel = "poly",
+  ranges = list(degree = degree_range),
+  tunecontrol = tune_control
+)
+
+# Print the best model found
+print(svm_tune_result$best.model)
+
+# Extract the best degree value
+best_degree <- svm_tune_result$best.parameters$degree
+
+# Print the best degree value
+print(paste("Best degree value:", best_degree))
+
+# Train the SVM model using the best degree value
+best_svm_model <- svm(train_x_encoded, train_y_encoded, kernel = "poly", degree = best_degree)
+
+# Predict on the test data using the best model
+best_svm_predictions <- predict(best_svm_model, test_x_encoded)
+
+# Compute the confusion matrix for the best model
+best_conf_matrix <- confusionMatrix(best_svm_predictions, test_y_encoded)
+
+# Extract F1 score and accuracy from the confusion matrix
+best_f1_score <- best_conf_matrix$byClass["F1"]
+best_accuracy <- best_conf_matrix$overall["Accuracy"]
+
+# Print the results for the best model
+print(paste("Best F1 Score:", best_f1_score))
+print(paste("Best Accuracy:", best_accuracy))
+```
+
+### Roc Curve for SVM with Polynomial Kernel
+```{r}
+library(e1071)
+library(pROC)
+library(ggplot2)
+set.seed(123)
+# Train the SVM model using the best degree value with probability estimates
+best_svm_model_poly <- svm(train_x_encoded, train_y_encoded, kernel = "poly", degree = best_degree, probability = TRUE)
+
+# Predict on the test data using the best model with probability estimates
+svm_prob_poly <- predict(best_svm_model_poly, test_x_encoded, probability = TRUE)
+
+# Extract the probabilities for the positive class
+svm_probabilities_poly <- attr(svm_prob_poly, "probabilities")[, "Class1"]
+
+# Calculate the ROC data
+roc_data_svm_poly <- roc(response = test_y_encoded, predictor = svm_probabilities_poly)
+
+# Calculate the AUC
+auc_svm_poly <- auc(roc_data_svm_poly)
+
+# Print the AUC
+print(paste("AUC for SVM with Polynomial Kernel:", auc_svm_poly))
+
+# Create a data frame for ggplot2
+roc_df_svm_poly <- data.frame(
+  FPR = roc_data_svm_poly$specificities,
+  TPR = roc_data_svm_poly$sensitivities
+)
+
+# Plot ROC curve using ggplot2
+roc_plot_svm_poly <- ggplot(roc_df_svm_poly, aes(x = 1 - FPR, y = TPR)) +
+  geom_line(color = "lightblue", size = 1) +
+  geom_abline(linetype = "dashed", color = "pink", size = 1) +
+  labs(title = "ROC Curve for SVM Model with Polynomial Kernel",
+       x = "False Positive Rate",
+       y = "True Positive Rate") +
+  theme_minimal()
+
+# Print the ROC plot
+print(roc_plot_svm_poly)
+
+```
+
+## Comparison Between different kernels
+
+1- **Linear Kernel:**
+
+Best C Value: 0.1
+F1 Score: 0.975 (approx.)
+Accuracy: 95.24%
+This kernel provides a high F1 score and accuracy, indicating excellent performance in classifying the instances correctly and a good balance between precision and recall.
+
+2- **Radial Basis Function (RBF) Kernel:**
+
+    - Best Gamma Value: 0.0316
+    - F1 Score: 0.972 (approx.)
+    - Accuracy: 94.71%
+    - AUC: 0.907
+    The RBF kernel also performs well but slightly lags behind the linear kernel in both F1 score and accuracy. The AUC is lower compared to the linear kernel, suggesting less discriminative power.
+
+3- **Polynomial Kernel:**
+
+    - Best Degree Value: 3
+    - F1 Score: 0.975 (approx.)
+    - Accuracy: 95.24%
+    - AUC: 0.879
+    The polynomial kernel matches the linear kernel in terms of F1 score and accuracy, but the AUC is significantly lower, which implies that when considering the trade-off between true positive rate and false positive rate, it doesn't perform as well.
+
+The linear kernel is deemed the best due to several reasons:
+
+    - It has the highest AUC, indicating a better overall performance across all possible classification thresholds.
+    - It matches the highest F1 score, demonstrating an excellent balance between precision and recall.
+    - The kernel's simplicity likely prevents overfitting, making it more generalizable to unseen data.
+    
+
+# PCA
+
+Principal Component Analysis (PCA) is a powerful statistical technique that is used for dimensionality reduction while preserving as much of the variability in the data as possible. It achieves this by transforming the original set of features into a new set of uncorrelated variables, known as principal components, which are ordered by the amount of variance they capture from the data.
+
+The principal components are linear combinations of the original features and are orthogonal to each other, ensuring that they capture distinct information or variance. PCA is particularly useful in processing data with a large number of features, which may be correlated, by reducing the feature space to a smaller set of meaningful components without a significant loss of information. This simplification makes it easier to visualize and interpret the data, as well as to apply further analysis or machine learning algorithms efficiently.
+
+The first principal component accounts for the largest possible variance, and each succeeding component has the highest variance possible under the constraint that it is orthogonal to the preceding components. The number of principal components retained is typically chosen based on the goal of preserving a large percentage of the data's total variance, often using a threshold like 95%.
+
+PCA is widely used in exploratory data analysis, predictive modeling, and in the preprocessing of data for other algorithms that can benefit from dimensionality reduction.
+
+```{r}
+# Load necessary libraries
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(factoextra)
+library(cluster)
+
+
+# Remove the target variable 'diabetes' from the dataset
+df_encoded <- df_encoded[, !names(df_encoded) %in% c('diabetes','gender','hypertension','heart_disease')]
+
+
+# Convert all factors to numeric for PCA
+numeric_data <- df_encoded %>% 
+  mutate(across(where(is.factor), ~ as.numeric(as.character(.))))
+
+str(df_encoded)
+
+```
+
+
+```{r}
+set.seed(123)
+
+# Standardize the data
+data_scaled <- scale(df_encoded[, sapply(df_encoded, is.numeric)])
+
+# Apply PCA
+pca_result <- prcomp(data_scaled, center = TRUE, scale. = TRUE)
+
+#the summary gives the importance of components 
+summary(pca_result)
+
+
+```
+
+
+```{r}
+set.seed(123)
+## now make a fancy looking plot that shows the PCs and the variation:
+library(ggplot2)
+ 
+pca.data <- data.frame(Sample=rownames(pca_result$x),
+  X=pca_result$x[,1],
+  Y=pca_result$x[,2])
+
+# Extract the proportion of variance explained by PC1 and PC2
+pca.var.per <- pca_result$sdev^2 / sum(pca_result$sdev^2)
+pca.var.per <- pca.var.per[1:2] * 100 # Convert to percentage
+
+
+# View the loadings (contribution of each feature to each principal component)
+loadings <- pca_result$rotation[]
+
+# Inspect the loadings
+print(loadings)
+fviz_eig(pca_result)
+
+```
+From this output, we can infer that:
+
+PC1 is the most important component, followed by PC2, PC3, and so on.
+The first six components together capture all the variance in the data.
+PC7 does not contribute to explaining the variance and can be disregarded.
+
+Since we're interested in a 2D visualization, we will focus on the first two principal components, which, according to our below results, account for approximately 47% of the variance (27.2% by PC1 and 20.4% by PC2).
+This will project our high-dimensional data into a 2D space.
+
+```{r}
+set.seed(123)
+ggplot(data=pca.data, aes(x=X, y=Y, label=Sample, colour=data$diabetes)) +
+  geom_point() +
+  scale_color_manual(values=c("pink", "lightblue")) +  # Adjust colors as needed
+  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
+  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
+  theme_bw() +
+  ggtitle("My PCA Graph")
+
+```
+
+- The graph shows a clear separation along PC1, which accounts for 27.2% of the variance in the dataset. This suggests that PC1 is capturing a significant aspect of the data's variability.
+
+
+- PC2 accounts for 20.4% of the variance, which is less than PC1 but still a substantial amount. There's also some separation along this component, although it's less pronounced than along PC1.
+
+
+- The points are color-coded based on the 'diabetes' variable, with one category represented in pink and the other in blue. From the plot, it seems that there is some degree of clustering based on the 'diabetes' status, but there is overlap between the two categories.
+
+
+- The clusters formed by the pink points (representing the '0' category of diabetes status) appear to be more spread out than the blue points (representing the '1' category). This could indicate that the '0' category has greater variability in the dataset with respect to the principal components, or it could reflect different sample sizes between the groups.
+
+
+- There's no clear boundary between the two categories, indicating that while the first two principal components capture some differences related to diabetes status, they are not completely distinct. This suggests that diabetes status is influenced by multiple factors, and not all of them can be fully captured by the first two principal components.
+
+
+- The overlap between the two categories implies that a higher-dimensional analysis or a more complex model might be necessary to better understand the differences between the two groups.
+
+### 3D visualization
+In order to visualize the results better, we will look at a 3D visualization using the first 3 components capturing approximately 64% of the variance.
+
+```{r message=FALSE, echo=FALSE}
+library(plotly)
+# Assuming 'pca_result' is your PCA result from the prcomp function
+# Extract the PCA scores for the first three components
+pca_scores2 <- pca_result$x[, 1:3]
+
+# Create a new dataframe for plotting if needed
+pca.data2 <- data.frame(PC1 = pca_scores2[, 1], PC2 = pca_scores2[, 2], PC3 = pca_scores2[, 3], diabetes = data$diabetes)
+
+# Now you can use pca.data to create your 3D plot
+
+
+fig <- plot_ly(pca.data2, x = ~PC1, y = ~PC2, z = ~PC3, color = ~diabetes, colors = c('pink', 'lightblue')) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'PC1'),
+                      yaxis = list(title = 'PC2'),
+                      zaxis = list(title = 'PC3')))
+fig
+
+
+```
+
+# Clustering
+
+## K-Means Clustering
+
+K-means clustering is a popular unsupervised learning algorithm that is used to partition a dataset into K distinct, non-overlapping subgroups (or clusters) based on similarity. It's considered unsupervised because the grouping is done without reference to any external labels or ground truth.
+
+### How K-Means Works
+
+The process of K-means clustering involves the following steps:
+1. **Initialization**: K initial "centroids" are chosen at random from the dataset.
+2. **Assignment**: Each data point is assigned to the nearest centroid, and groups are formed.
+3. **Update**: The centroids are recalculated as the center of the newly formed groups.
+4. **Iterate**: Steps 2 and 3 are repeated until the centroids no longer move significantly, indicating that the groups are as consistent as possible.
+
+K-means is widely used in market segmentation, document clustering, image segmentation, and other areas where data needs to be grouped efficiently. Its simplicity and speed are advantageous when dealing with large datasets.
+
+
+- The value of K must be specified in advance, and finding the optimal K often requires additional techniques, such as the Elbow Method and Average Silhouette Method which we will use later on.
+- K-means assumes that clusters are spherical and of similar size, which might not always be the case in real-world data.
+
+
+```{r}
+k2 <- kmeans(df_encoded, centers = 2, nstart = 25)
+k3 <- kmeans(df_encoded, centers = 3, nstart = 25)
+k4 <- kmeans(df_encoded, centers = 4, nstart = 25)
+k5 <- kmeans(df_encoded, centers = 5, nstart = 25)
+
+# plots to compare
+p1 <- fviz_cluster(k2, geom = "point", data = df_encoded) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = df_encoded) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = df_encoded) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = df_encoded) + ggtitle("k = 5")
+
+library(gridExtra)
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+In the above graphs, we ran k-mean clustering with different k(2 to 5) in order to visualize the difference and hopefully find the best k.
+
+It is normal to have some overlap in k-means cluster plots, especially when visualizing high-dimensional data that has been reduced to two dimensions for the purpose of visualization. This dimensional reduction can sometimes cause clusters that are actually separate in high-dimensional space to appear overlapped in two-dimensional space.
+
+However, we will use two methods in order to find the best k for cluster separation.
+
+## Finding the optimal k
+### Elbow Method
+```{r}
+
+set.seed(123)
+
+fviz_nbclust(df_encoded, kmeans, method = "wss")
+```
+
+The Elbow Method graph above shows the within groups sum of squares (WSS) for different numbers of clusters. The best number of clusters k is typically determined by looking for the "elbow" in the graph, which is the point where the WSS begins to decrease at a slower rate. This point indicates that adding more clusters does not significantly improve the fit of the model.
+
+In the graph above, the WSS sharply drops from 1 to 2 and continues to decrease as the number of clusters increases. However, the rate of decrease lessens after k=3. While the WSS continues to decrease past k=3, the reductions are more marginal and indicate diminishing returns on the improvement of the cluster fit.
+
+Therefore, according to this Elbow Method graph, k=3 appears to be the most appropriate number of clusters to choose for this dataset, as it is the point after which the decrease in WSS begins to level off, signifying the balance between the number of clusters and the compactness of the clustering.
+
+### Average Silhouette Method
+```{r}
+fviz_nbclust(df_encoded, kmeans, method = "silhouette")
+
+```
+
+The silhouette method provides insight into the separation distance between the resulting clusters. A higher silhouette width indicates better cluster definition.
+
+In the silhouette analysis graph:
+
+- The silhouette score for \( k=2 \) is the highest, suggesting that the data points are well matched to their own clusters. However, this doesn't necessarily mean it's the best choice.
+  
+- While the silhouette score peaks at \( k=2 \), the score for \( k=3 \) is also relatively high, which could be indicative of a good cluster structure with meaningful separation.
+  
+- The silhouette score for \( k=3 \) is above the average threshold, suggesting that the clusters are distinct and data points are closer to their own cluster center than to others.
+
+- As \( k \) increases beyond 3, the silhouette scores tend to decrease and plateau, indicating that additional clusters might not provide more distinct groupings and may start to segment the data unnecessarily.
+
+Considering these factors, and based on domain knowledge or other contextual information that suggests \( k=3 \) is optimal, we would conclude that three clusters provide a meaningful and interpretable separation of the data. This balances the statistical evidence from the silhouette scores with practical considerations for the dataset's application.
+
+## Final result
+Based on all of the above, we concluded that k=3 is most suitable for clustering our data.
+```{r}
+set.seed(123)
+final <- kmeans(df_encoded, 3, nstart = 25)
+fviz_cluster(final, data = df_encoded)
+
+```
+
+### Hierarchical Clustering
+
+Hierarchical clustering is a method of cluster analysis which seeks to build a hierarchy of clusters. It is commonly used in data analysis to organize data into tree-like structures (dendrograms) that reveal relationships and hierarchies among different data points.
+
+How itWorks:
+
+Initialization: Each data point starts as its own cluster.
+
+Similarity Measurement: Calculate distances between all pairs of clusters using a chosen metric (like Euclidean distance).
+
+Cluster Merging: Repeatedly merge the closest pair of clusters.
+
+Hierarchy Formation: Each merge forms part of a hierarchy represented as a tree structure (dendrogram).
+
+Termination: The process continues until all data points are merged into a single cluster.
+
+Number of Clusters: Decide the number of clusters by cutting the dendrogram at a desired level.
+
+
+
+```{r message=FALSE, echo=FALSE}
+# Load necessary libraries
+library(factoextra)
+library(cluster)
+
+# Ensure that the data frame only contains numeric data
+df_encoded_numeric <- df_encoded[sapply(df_encoded, is.numeric)]
+
+# Perform hierarchical clustering using the complete linkage method on the numeric data
+hc <- hclust(dist(df_encoded_numeric), method = "average")
+
+# Cut the dendrogram at 3 clusters
+sub_grp <- cutree(hc, k = 3)
+
+# Plot the dendrogram using fviz_dend from factoextra
+p_dend <- fviz_dend(hc, k = 3, rect = TRUE, show_labels = FALSE) + 
+  ggtitle("Hierarchical Clustering Dendrogram") +
+  theme_minimal() + 
+  scale_fill_manual(values = c("#FFC0CB", "#ADD8E6", "#B19CD9")) # Pink, Light Blue, Lavender colors for the clusters
+
+# Print the dendrogram with colored clusters
+print(p_dend)
+
+```
+We have chosen to employ the average linkage method in our hierarchical clustering approach. This decision was based on the average linkage method's ability to balance the extremities presented by single and complete linkage methods. In average linkage, the distance between two clusters is defined as the average distance between all pairs of points in the respective clusters. This approach offers a more comprehensive and robust understanding of cluster distances, as it considers all inter-cluster data point relationships, thus reducing the impact of outliers and noise in the data.
+
+Furthermore, we opted to cut the dendrogram at k=3, mirroring our previous decision in the k-means clustering method. This decision is guided by the insights gleaned from our k-means analysis, which indicated that three clusters provide a meaningful and interpretable segmentation of our data. By maintaining consistency in the number of clusters between the two methods, we aim to facilitate a more coherent comparison and validation of our clustering results, thus reinforcing the reliability and accuracy of our overall analysis.
+
+
+# Conclusion
+
+In conclusion: 
+
+* We first started by introducing the topic at hand, which is diabetes mellitus and the different features provided in our dataset that might help us predict if a person has the disease or not. 
+
+* Next, we delved deeper into the dataset. Indeed, we started by selecting only a subset of the records for computational efficiency purposes. Furthermore, we used graphs in order to visualize our data as they provide an accessible way to see and understand trends, outliers, and patterns in data. Based on this analysis, we concluded that F1 score would be better than accuracy as a metric to asses model performance. This is due to the significant class imbalance observed in the dataset. 
+
+* Furthermore, we moved onto data preprocessing. We started by removing the observations where no information was available for *smoking history* in order to avoid the possible negative repercussions that can arise from including data points with missing information in the dataset. Next, we converted *gender* from categorical into numerical binary values, as well as one-hot encoding *smoking history*. Finally, we produced a heat map that helped us get a feel for the possible correlations between the features in the dataset and the response. 
+
+* We then split the data into training and test sets, and went on to selecting the relevant features. The latter was done using the **Random Forest** algorithm. After obtaining the results and examining the importance scores of each of the features, we decided to omit *gender*, *heart disease*, and *hypertension*, as they were the least important. 
+
+* After running the Random Forest exuding and including the previously mentioned features, it was confirmed that, indeed, they did not have important prediction power, as both the accuracy and F1 score did not vary much with or without them. 
+
+* Still conducting tree-based methods, we moved onto bagging, where we obtained an F1 score of 0.8 and an accuracy of around 96%. 
+
+* Next, we built pruned and unpruned decision trees. The pruned and unpruned trees had respective F1 scores of 98% and 96%, which are both good. However the pruned tree still performed slightly better. 
+
+* To Recap a bit concerning the tree based methods:
+* The ROC curves of the methods indicated best performance in Random Forest and worst in the Pruned Decision Tree, out of the three tree-based methods that we tried. 
+* While the ROC curves showed better performance in Bagging than for the pruned Decision Tree, the F1 scores demonstrated the opposite. Still, all in all, the best performing model was the Random Forest. 
+
+* Moving on to support vector machines, let us recap the findings concerning each kernel: 
+* The Linear Kernel exhibited a high F1 score of around 0.975, and accuracy of 95.24% indicating that the model is extremely reliable. Moreover, the AUC of 0.968 indicated very good performance as well. 
+* The Radial Kernel (having a best gamma value of 0.031) showed good performance as well, with an F1 score of approximately 97% as well as accuracy of 94.7%. Moreover, in accordance with these, the AUC of 0.9 reinforces the model's robustness in making the correct predictions across both classes. 
+* The Polynomial Kernel, which has a best degree value of 3 has a F1 score of around 0.975, accuracy of 95.24% and AUC of 0.879. This is still considered good performance.
+
+* Comparing the Support Vector Machines we can see  that the linear kernel performs best, while the radial kernel comes in second place, and polynomial kernel in third place.This can indicate that our data is linearly separable
+
+* After developing our models, we conducted Principal Component Analysis (PCA). We found that there is no clear boundary between the two categories (diabetic(1) and non diabetic(0)). The lack of an evident boundary between the two groups suggests that although the first two principal components capture some variations linked to diabetes status, they are not entirely different from one another. This shows that there are more factors influencing diabetes status than just the first two major components, and that these factors are not entirely accounted for.
+Given the overlap between the two categories, a more sophisticated model or a higher-dimensional analysis may be required in order to fully comprehend the distinctions between the two groups.
+
+* The final approach we will be conducting is the Clustering approach.
+* Starting with K-Means Clustering. After conducting a few methods that aim to find the optimal K, we concluded that a K=3 was the most suitable for our data.
+* Moving on to Hierarchical Clustering, we were able to build a dendrogram, employing the average linkage method. Staying consistent with the results of K-means clustering, we have opted to cut the dendrogram at k=3, obtaining a clear distinction between the three classes. 
+
+All things considered, : Machine learning-based models for diabetes identification are of high importance as they have the potential to revolutionize diabetes care by enabling early detection, personalized interventions, and improved health outcomes. This could significantly reduce the burden of diabetes on individuals, healthcare systems, and society as a whole.
